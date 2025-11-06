@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Filter from "./components/Filter";
 import PersonForm from "./components/PersonForm";
 import Persons from "./components/Persons";
+import phonebookService from "./services/phonebook";
+
 const App = () => {
   const [persons, setPersons] = useState([
     { name: "Arto Hellas", phone: "123" },
@@ -19,7 +21,10 @@ const App = () => {
       return;
     }
     const person = { name: newName, phone: phone };
-    setPersons(persons.concat(person));
+    phonebookService.create(person).then((returnedPerson) => {
+      setPersons(persons.concat(returnedPerson));
+    });
+    // setPersons(persons.concat(person));
     // clear active search when adding a person
     setfilterP(null);
     setNewName("");
@@ -49,6 +54,18 @@ const App = () => {
     // keep the query in the input so user sees what was searched for
     console.log("query getting run");
   };
+
+  const hook = () => {
+    console.log("effect");
+    phonebookService.getAll().then((response) => {
+      console.log("promise fulfilled");
+      setPersons(response.data);
+    });
+  };
+
+  // called on first open to fetch the current data
+  useEffect(hook, []);
+
   return (
     <div>
       <h2>Phonebook</h2>
