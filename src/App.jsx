@@ -16,13 +16,29 @@ const App = () => {
 
   const addPerson = (event) => {
     event.preventDefault();
-    if (persons.filter((person) => person.name == newName).length > 0) {
-      alert(`${newName} is already added to phonebook`);
+    const newPerson = persons.find((person) => person.name === newName);
+    if (newPerson !== undefined) {
+      if (
+        window.confirm(
+          `${newName} is already added to the phonebook, replace the old number with the new one?`
+        )
+      ) {
+        phonebookService
+          .update(newPerson.id, { name: newName, phone: phone })
+          .then((response) => {
+            setPersons(
+              persons.map((person) =>
+                person.id !== newPerson.id ? person : response.data
+              )
+            );
+          });
+      }
       return;
     }
+
     const person = { name: newName, phone: phone };
-    phonebookService.create(person).then((returnedPerson) => {
-      setPersons(persons.concat(returnedPerson));
+    phonebookService.create(person).then((response) => {
+      setPersons(persons.concat(response.data));
     });
     // setPersons(persons.concat(person));
     // clear active search when adding a person
@@ -63,6 +79,15 @@ const App = () => {
     });
   };
 
+  const handleRemove = (id) => {
+    const removePerson = persons.find((person) => person.id === id);
+    if (window.confirm(`Delete ${removePerson.name}`)) {
+      phonebookService.remove(id).then(() => {
+        setPersons(persons.filter((person) => person.id !== id));
+      });
+    }
+  };
+
   // called on first open to fetch the current data
   useEffect(hook, []);
 
@@ -79,7 +104,7 @@ const App = () => {
         handlePhoneChange={handlePhoneChange}
       />
       <h2>Numbers</h2>
-      <Persons persons={persons} filterP={filterP} />
+      <Persons persons={persons} filterP={filterP} remove={handleRemove} />
     </div>
   );
 };
