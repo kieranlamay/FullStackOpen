@@ -3,6 +3,8 @@ import Filter from "./components/Filter";
 import PersonForm from "./components/PersonForm";
 import Persons from "./components/Persons";
 import phonebookService from "./services/phonebook";
+import Notification from "./components/Notification";
+import "./index.css";
 
 const App = () => {
   const [persons, setPersons] = useState([
@@ -11,6 +13,7 @@ const App = () => {
   const [newName, setNewName] = useState("");
   const [phone, setPhone] = useState("");
   const [query, setQuery] = useState("");
+  const [message, setMessage] = useState(null);
   // null = no active search; array (possibly empty) = search performed
   const [filterP, setfilterP] = useState(null);
 
@@ -31,15 +34,37 @@ const App = () => {
                 person.id !== newPerson.id ? person : response.data
               )
             );
+          })
+          .then(() => {
+            setMessage(`Updated ${newName} with new number ${phone}`);
+            setTimeout(() => {
+              setMessage(null);
+            }, 5000);
+          })
+          .catch((error) => {
+            setMessage(
+              `Information of ${newName} has already been removed from server. Refresh page to see latest data.`
+            );
+            setTimeout(() => {
+              setMessage(null);
+            }, 5000);
           });
       }
       return;
     }
 
     const person = { name: newName, phone: phone };
-    phonebookService.create(person).then((response) => {
-      setPersons(persons.concat(response.data));
-    });
+    phonebookService
+      .create(person)
+      .then((response) => {
+        setPersons(persons.concat(response.data));
+      })
+      .then(() => {
+        setMessage(`Added ${newName}`);
+        setTimeout(() => {
+          setMessage(null);
+        }, 5000);
+      });
     // setPersons(persons.concat(person));
     // clear active search when adding a person
     setfilterP(null);
@@ -94,6 +119,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={message} />
       <Filter onChange={handleQueryChange} value={query} onSubmit={search} />
       <h2>Add a new</h2>
       <PersonForm
