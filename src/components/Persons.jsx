@@ -1,9 +1,10 @@
 const Persons = ({ persons, filterP, remove }) => {
+  const list = filterP !== null ? filterP : persons;
   return (
     <div>
-      {(filterP !== null ? filterP : persons).map((person) => (
-        <div key={person.name}>
-          {person.name} {person.phone}
+      {list.map((person) => (
+        <div key={person.id ?? person.name}>
+          {person.name} {person.number}
           <button onClick={() => remove(person.id)}>delete</button>
         </div>
       ))}

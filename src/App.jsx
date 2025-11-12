@@ -8,10 +8,10 @@ import "./index.css";
 
 const App = () => {
   const [persons, setPersons] = useState([
-    { name: "Arto Hellas", phone: "123" },
+    { name: "Arto Hellas", number: "123" },
   ]);
   const [newName, setNewName] = useState("");
-  const [phone, setPhone] = useState("");
+  const [number, setNumber] = useState("");
   const [query, setQuery] = useState("");
   const [message, setMessage] = useState(null);
   // null = no active search; array (possibly empty) = search performed
@@ -27,7 +27,7 @@ const App = () => {
         )
       ) {
         phonebookService
-          .update(newPerson.id, { name: newName, phone: phone })
+          .update(newPerson.id, { name: newName, number: number })
           .then((response) => {
             setPersons(
               persons.map((person) =>
@@ -36,7 +36,7 @@ const App = () => {
             );
           })
           .then(() => {
-            setMessage(`Updated ${newName} with new number ${phone}`);
+            setMessage(`Updated ${newName} with new number ${number}`);
             setTimeout(() => {
               setMessage(null);
             }, 5000);
@@ -53,7 +53,7 @@ const App = () => {
       return;
     }
 
-    const person = { name: newName, phone: phone };
+    const person = { name: newName, number: number };
     phonebookService
       .create(person)
       .then((response) => {
@@ -69,15 +69,15 @@ const App = () => {
     // clear active search when adding a person
     setfilterP(null);
     setNewName("");
-    setPhone("");
+    setNumber("");
   };
 
   const handleNameChange = (event) => {
     setNewName(event.target.value);
   };
 
-  const handlePhoneChange = (event) => {
-    setPhone(event.target.value);
+  const handleNumberChange = (event) => {
+    setNumber(event.target.value);
   };
 
   const handleQueryChange = (event) => {
@@ -126,8 +126,8 @@ const App = () => {
         addPerson={addPerson}
         newName={newName}
         handleNameChange={handleNameChange}
-        phone={phone}
-        handlePhoneChange={handlePhoneChange}
+        number={number}
+        handleNumberChange={handleNumberChange}
       />
       <h2>Numbers</h2>
       <Persons persons={persons} filterP={filterP} remove={handleRemove} />
