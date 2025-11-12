@@ -1,7 +1,15 @@
 const express = require("express");
+const morgan = require("morgan");
+const cors = require("cors");
 const app = express();
 
 app.use(express.json());
+app.use(morgan("tiny :body"));
+app.use(cors());
+
+morgan.token("body", (req) => {
+  return req.method === "POST" ? JSON.stringify(req.body) : "";
+});
 
 let persons = [
   {
