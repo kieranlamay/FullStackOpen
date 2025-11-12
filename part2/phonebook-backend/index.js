@@ -2,10 +2,12 @@ const express = require("express");
 const morgan = require("morgan");
 const cors = require("cors");
 const app = express();
+require("dotenv").config();
 
 app.use(express.json());
 app.use(morgan("tiny :body"));
 app.use(cors());
+app.use(express.static("dist"));
 
 morgan.token("body", (req) => {
   return req.method === "POST" ? JSON.stringify(req.body) : "";
@@ -85,7 +87,7 @@ app.post("/api/persons/", (request, response) => {
   persons = persons.concat(person);
   response.json(person);
 });
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server listening on PORT ${PORT}`);
 });
