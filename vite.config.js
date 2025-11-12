@@ -8,6 +8,12 @@ export default defineConfig({
   server: {
     // Prevent Vite's file watcher from reacting to changes in the backend folder.
     // Backend lives at ../phonebook-backend relative to this frontend project root.
+    proxy: {
+      "/api": {
+        target: "http://localhost:3001",
+        changeOrigin: true,
+      },
+    },
     watch: {
       ignored: [
         path.resolve(__dirname, "..", "phonebook-backend") + "/**",
