@@ -3,17 +3,15 @@ const morgan = require("morgan");
 const cors = require("cors");
 const app = express();
 require("dotenv").config();
-const path = require("path");
 
 app.use(express.json());
+app.use(morgan("tiny :body"));
+app.use(cors());
+app.use(express.static("dist"));
 
 morgan.token("body", (req) => {
   return req.method === "POST" ? JSON.stringify(req.body) : "";
 });
-
-app.use(morgan("tiny :body"));
-app.use(cors());
-app.use(express.static(path.join(__dirname, "dist")));
 
 let persons = [
   {
@@ -89,11 +87,6 @@ app.post("/api/persons/", (request, response) => {
   persons = persons.concat(person);
   response.json(person);
 });
-
-app.get(/^(?!\/api).*/, (req, res) => {
-  res.sendFile(path.join(__dirname, "dist", "index.html"));
-});
-
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server listening on PORT ${PORT}`);
