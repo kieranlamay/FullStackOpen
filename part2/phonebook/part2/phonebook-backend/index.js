@@ -1,9 +1,10 @@
+require("dotenv").config();
 const express = require("express");
 const morgan = require("morgan");
 const cors = require("cors");
 const app = express();
-require("dotenv").config();
 const path = require("path");
+const Person = require("./models/person");
 
 app.use(express.json());
 
@@ -15,6 +16,7 @@ app.use(morgan("tiny :body"));
 app.use(cors());
 app.use(express.static(path.join(__dirname, "dist")));
 
+// remove this later
 let persons = [
   {
     id: "1",
@@ -39,7 +41,9 @@ let persons = [
 ];
 
 app.get("/api/persons", (request, response) => {
-  response.json(persons);
+  Person.find({}).then((persons) => {
+    response.json(persons);
+  });
 });
 
 app.get("/info", (request, response) => {
@@ -53,13 +57,16 @@ app.get("/info", (request, response) => {
 
 app.get("/api/persons/:id", (request, response) => {
   const id = request.params.id;
-  // compare as strings to avoid type mismatch between stored ids and URL param
-  const person = persons.find((person) => String(person.id) === String(id));
-  if (person) {
+  Person.findById(id).then((person) => {
     response.json(person);
-  } else {
-    response.status(404).end();
-  }
+  });
+  // compare as strings to avoid type mismatch between stored ids and URL param
+  // const person = persons.find((person) => String(person.id) === String(id));
+  // if (person) {
+  //   response.json(person);
+  // } else {
+  //   response.status(404).end();
+  // }
 });
 
 app.delete("/api/persons/:id", (request, response) => {
@@ -83,14 +90,16 @@ app.post("/api/persons/", (request, response) => {
     return response.status(400).json({ error: "name must be unique" });
   }
 
-  const person = {
+  const person = new Person({
     // store ids as strings for consistency with URL params
-    id: String(id),
+    // id: String(id), // no longer needed because mongo creates its own ids?
     name: request.body.name,
-    number: request.body.number || null,
-  };
-  persons = persons.concat(person);
-  response.json(person);
+    number: request.body.number, // do i even need this null if i check for it above
+  });
+
+  person.save().then((savedPerson) => {
+    response.json(savedPerson);
+  });
 });
 
 app.get(/^(?!\/api).*/, (req, res) => {

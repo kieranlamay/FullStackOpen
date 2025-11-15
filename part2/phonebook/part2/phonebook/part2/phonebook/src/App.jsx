@@ -43,7 +43,7 @@ const App = () => {
           })
           .catch((error) => {
             setMessage(
-              `Information of ${newName} has already been removed from server. Refresh page to see latest data.`
+              `Failed to update ${newName}: ${error.response.data.error}`
             );
             setTimeout(() => {
               setMessage(null);
@@ -64,8 +64,13 @@ const App = () => {
         setTimeout(() => {
           setMessage(null);
         }, 5000);
+      })
+      .catch((error) => {
+        setMessage(`Failed to add ${newName}: ${error.response.data.error}`);
+        setTimeout(() => {
+          setMessage(null);
+        }, 5000);
       });
-    // setPersons(persons.concat(person));
     // clear active search when adding a person
     setfilterP(null);
     setNewName("");

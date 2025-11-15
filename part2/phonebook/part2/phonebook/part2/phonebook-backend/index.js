@@ -53,7 +53,8 @@ app.get("/info", (request, response) => {
 
 app.get("/api/persons/:id", (request, response) => {
   const id = request.params.id;
-  const person = persons.find((person) => person.id === id);
+  // compare as strings to avoid type mismatch between stored ids and URL param
+  const person = persons.find((person) => String(person.id) === String(id));
   if (person) {
     response.json(person);
   } else {
@@ -63,7 +64,8 @@ app.get("/api/persons/:id", (request, response) => {
 
 app.delete("/api/persons/:id", (request, response) => {
   const id = request.params.id;
-  persons = persons.filter((person) => person.id !== id);
+  // use string comparison to avoid mismatches when ids are numbers vs strings
+  persons = persons.filter((person) => String(person.id) !== String(id));
   response.status(204).end();
 });
 
@@ -82,7 +84,8 @@ app.post("/api/persons/", (request, response) => {
   }
 
   const person = {
-    id: id,
+    // store ids as strings for consistency with URL params
+    id: String(id),
     name: request.body.name,
     number: request.body.number || null,
   };
@@ -94,6 +97,23 @@ app.get(/^(?!\/api).*/, (req, res) => {
   res.sendFile(path.join(__dirname, "dist", "index.html"));
 });
 
+app.put("/api/persons/:id", (request, response) => {
+  const id = request.params.id;
+  const person = persons.find((person) => String(person.id) === String(id));
+
+  if (person === undefined) {
+    return response.status(404).json({ error: "person not found" });
+  }
+
+  if (!request.body.name)
+    return response.status(400).json({ error: "name missing" });
+  if (!request.body.number)
+    return response.status(400).json({ error: "phone number missing" });
+
+  person.name = request.body.name;
+  person.number = request.body.number;
+  response.json(person);
+});
 // comment
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
