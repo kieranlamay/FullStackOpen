@@ -80,10 +80,6 @@ app.post("/api/persons/", (request, response, next) => {
     });
 });
 
-app.get(/^(?!\/api).*/, (req, res) => {
-  res.sendFile(path.join(__dirname, "dist", "index.html"));
-});
-
 app.put("/api/persons/:id", (request, response, next) => {
   const id = request.params.id;
   Person.findById(id)
@@ -121,11 +117,15 @@ const errorHandler = (error, request, response, next) => {
   next(error);
 };
 
-const unknownEndpoint = (request, response) => {
-  response.status(404).send({ error: "unknown endpoint" });
-};
+// const unknownEndpoint = (request, response) => {
+//   response.status(404).send({ error: "unknown endpoint" });
+// };
 
-app.use(unknownEndpoint); // unknown endpoint middleware
+// app.use(unknownEndpoint); // unknown endpoint middleware
+
+app.get(/^(?!\/api).*/, (req, res) => {
+  res.sendFile(path.join(__dirname, "dist", "index.html"));
+});
 
 app.use(errorHandler); // last loaded middleware, all routes should be registered before this
 
