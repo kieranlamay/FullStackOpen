@@ -46,16 +46,7 @@ app.get("/api/persons/:id", (request, response, next) => {
     })
     .catch((error) => {
       next(error);
-      // console.log(error);
-      // response.status(500).send({ error: "malformatted id" });
     });
-  // compare as strings to avoid type mismatch between stored ids and URL param
-  // const person = persons.find((person) => String(person.id) === String(id));
-  // if (person) {
-  //   response.json(person);
-  // } else {
-  //   response.status(404).end();
-  // }
 });
 
 app.delete("/api/persons/:id", (request, response, next) => {
@@ -71,12 +62,7 @@ app.delete("/api/persons/:id", (request, response, next) => {
     });
 });
 
-app.post("/api/persons/", (request, response) => {
-  // NEED TO REMOVE/ REIMPLEMENT THIS LATER
-  // if (persons.find((person) => person.name === request.body.name)) {
-  //   return response.status(400).json({ error: "name must be unique" });
-  // }
-
+app.post("/api/persons/", (request, response, next) => {
   const person = new Person({
     // store ids as strings for consistency with URL params
     // id: String(id), // no longer needed because mongo creates its own ids?
@@ -100,7 +86,6 @@ app.get(/^(?!\/api).*/, (req, res) => {
 
 app.put("/api/persons/:id", (request, response, next) => {
   const id = request.params.id;
-  // const person = persons.find((person) => String(person.id) === String(id));
   Person.findById(id)
     .then((person) => {
       if (!person) {
