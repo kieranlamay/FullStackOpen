@@ -1,5 +1,5 @@
 .env
 node_modules
 
-# Don't ignore built files in dist
-!dist/**/*.js
+# Allow frontend build files
+!dist/**
