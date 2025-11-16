@@ -72,18 +72,10 @@ app.delete("/api/persons/:id", (request, response, next) => {
 });
 
 app.post("/api/persons/", (request, response) => {
-  const id = Math.round(Math.random() * 100000);
-  if (!request.body.name) {
-    return response.status(400).json({ error: "name missing" });
-  }
-
-  if (!request.body.number) {
-    return response.status(400).json({ error: "phone number missing" });
-  }
-
-  if (persons.find((person) => person.name === request.body.name)) {
-    return response.status(400).json({ error: "name must be unique" });
-  }
+  // NEED TO REMOVE/ REIMPLEMENT THIS LATER
+  // if (persons.find((person) => person.name === request.body.name)) {
+  //   return response.status(400).json({ error: "name must be unique" });
+  // }
 
   const person = new Person({
     // store ids as strings for consistency with URL params
@@ -92,9 +84,14 @@ app.post("/api/persons/", (request, response) => {
     number: request.body.number, // do i even need this null if i check for it above
   });
 
-  person.save().then((savedPerson) => {
-    response.json(savedPerson);
-  });
+  person
+    .save()
+    .then((savedPerson) => {
+      response.json(savedPerson);
+    })
+    .catch((error) => {
+      next(error);
+    });
 });
 
 app.get(/^(?!\/api).*/, (req, res) => {
@@ -130,7 +127,9 @@ const errorHandler = (error, request, response, next) => {
   console.error(error.message);
 
   if (error.name === "CastError") {
-    return response.status(400).send({ error: "malformatted id" });
+    return response.status(400).json({ error: "malformatted id" });
+  } else if (error.name === "ValidationError") {
+    return response.status(400).json({ error: error.message });
   }
 
   console.log(error.name);
