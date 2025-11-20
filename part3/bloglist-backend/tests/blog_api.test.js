@@ -203,11 +203,13 @@ describe("when there is initially one user in db", () => {
       .expect("Content-Type", /application\/json/);
 
     const usersAtEnd = await helper.usersInDb();
-    assert(result.body.error.includes("is shorter than the minimum allowed length"));
+    assert(
+      result.body.error.includes("is shorter than the minimum allowed length")
+    );
 
     assert.strictEqual(usersAtEnd.length, usersAtStart.length);
   });
-  
+
   test("creation fails with proper statuscode if password is too short", async () => {
     const usersAtStart = await helper.usersInDb();
     const newUser = {
@@ -223,7 +225,11 @@ describe("when there is initially one user in db", () => {
       .expect("Content-Type", /application\/json/);
 
     const usersAtEnd = await helper.usersInDb();
-    assert(result.body.error.includes("password length must be at least 3 characters long"));
+    assert(
+      result.body.error.includes(
+        "password length must be at least 3 characters long"
+      )
+    );
 
     assert.strictEqual(usersAtEnd.length, usersAtStart.length);
   });
@@ -264,6 +270,26 @@ describe("when there is initially one user in db", () => {
     assert(result.body.error.includes("User validation failed"));
 
     assert.strictEqual(usersAtEnd.length, usersAtStart.length);
+  });
+
+  test("user blogs are populated correctly", async () => {
+    const user = (await helper.usersInDb())[0];
+    const newBlog = {
+      title: "User's Blog",
+      author: "User Author",
+      url: "http://userblog.com",
+      likes: 5,
+      userId: user.id,
+    };
+
+    const response = await api
+      .post("/api/blogs")
+      .send(newBlog)
+      .expect(201)
+      .expect("Content-Type", /application\/json/);
+
+    const updatedUser = await User.findById(user.id).populate("blogs");
+    assert(updatedUser.blogs.some((blog) => blog.id === response.body.id));
   });
 });
 
