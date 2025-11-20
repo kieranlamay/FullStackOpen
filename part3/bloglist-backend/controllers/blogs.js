@@ -1,7 +1,7 @@
 const Blog = require("../models/blog");
 const blogsRouter = require("express").Router();
-const User = require("../models/user");
-const jwt = require("jsonwebtoken");
+// const User = require("../models/user");
+const { userExtractor } = require("../utils/middleware");
 
 blogsRouter.get("/", async (request, response) => {
   const blogs = await Blog.find({}).populate("user", {
@@ -11,14 +11,8 @@ blogsRouter.get("/", async (request, response) => {
   response.json(blogs);
 });
 
-blogsRouter.post("/", async (request, response) => {
-  const decodedToken = jwt.verify(request.token, process.env.SECRET);
-
-  // never trust the payload token blindly
-  if (!decodedToken.id) {
-    return response.status(401).json({ error: "token invalid" });
-  }
-  const user = await User.findById(decodedToken.id);
+blogsRouter.post("/", userExtractor, async (request, response) => {
+  const user = request.user;
   const blog = new Blog(request.body);
 
   if (!user) {
@@ -36,21 +30,14 @@ blogsRouter.post("/", async (request, response) => {
   }
 });
 
-blogsRouter.delete("/:id", async (request, response) => {
-  const decodedToken = jwt.verify(request.token, process.env.SECRET);
-
-  // never trust the payload token blindly
-  if (!decodedToken.id) {
-    return response.status(401).json({ error: "token invalid" });
-  }
-  // const id = request.params.id;
-  // const blog = await Blog.findByIdAndDelete(id);
+blogsRouter.delete("/:id", userExtractor, async (request, response) => {
+  const user = request.user;
   const blog = await Blog.findById(request.params.id);
   if (!blog) {
     return response.status(404).json({ error: "blog not found" }); // should i add a message later?
   }
   // decoded token id is the user id of the logged in user
-  if (blog.user.toString() === decodedToken.id.toString()) {
+  if (blog.user.toString() === user._id.toString()) {
     await Blog.findByIdAndDelete(request.params.id);
     response.status(204).end();
   } else {
