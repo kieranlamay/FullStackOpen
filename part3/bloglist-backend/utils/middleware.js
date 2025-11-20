@@ -8,6 +8,20 @@ const requestLogger = (request, response, next) => {
   next();
 };
 
+const getTokenFrom = (request) => {
+  const authorization = request.get("authorization");
+
+  return null;
+};
+
+const tokenExtractor = (request, response, next) => {
+  const authorization = request.get("authorization");
+  if (authorization && authorization.startsWith("Bearer ")) {
+    request.token = authorization.replace("Bearer ", "");
+  }
+  next();
+};
+
 const errorHandler = (error, request, response, next) => {
   if (error.name === "CastError") {
     return response.status(400).send({ error: "malformatted id" });
@@ -27,4 +41,4 @@ const errorHandler = (error, request, response, next) => {
   next(error);
 };
 
-module.exports = { requestLogger, errorHandler };
+module.exports = { requestLogger, errorHandler, tokenExtractor };
