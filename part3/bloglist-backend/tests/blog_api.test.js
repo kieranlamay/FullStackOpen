@@ -9,11 +9,33 @@ const bcrypt = require("bcrypt");
 const User = require("../models/user");
 
 const api = supertest(app);
+let authToken;
 // run test with: npm run test -- tests/blog_api.test.js
-describe("when there are initially some blogs saved", () => {
+describe("when the database has initial data", () => {
   beforeEach(async () => {
     await Blog.deleteMany({});
-    await Blog.insertMany(helper.initialBlogs);
+    await User.deleteMany({});
+    const password = "sekret";
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    const user = new User({ username: "root", passwordHash });
+    await user.save();
+
+    // log the user in and store token for use in tests
+    const loginResponse = await api
+      .post("/api/login")
+      .send({ username: "root", password })
+      .expect(200);
+    authToken = loginResponse.body.token;
+
+    const blogsWithUser = helper.initialBlogs.map((b) => ({
+      ...b,
+      user: user._id,
+    }));
+
+    const savedBlogs = await Blog.insertMany(blogsWithUser);
+    user.blogs = savedBlogs.map((b) => b._id);
+    await user.save();
   });
 
   describe("fetching blogs", () => {
@@ -50,6 +72,7 @@ describe("when there are initially some blogs saved", () => {
 
       await api
         .post("/api/blogs")
+        .set("Authorization", `Bearer ${authToken}`)
         .send(newBlog)
         .expect(201)
         .expect("Content-Type", /application\/json/);
@@ -70,6 +93,7 @@ describe("when there are initially some blogs saved", () => {
 
       const response = await api
         .post("/api/blogs")
+        .set("Authorization", `Bearer ${authToken}`)
         .send(newBlog)
         .expect(201)
         .expect("Content-Type", /application\/json/);
@@ -86,7 +110,11 @@ describe("when there are initially some blogs saved", () => {
         likes: 4,
       };
 
-      await api.post("/api/blogs").send(noTitleBlog).expect(400);
+      await api
+        .post("/api/blogs")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send(noTitleBlog)
+        .expect(400);
 
       const noUrlBlog = {
         title: "New Blog",
@@ -94,7 +122,11 @@ describe("when there are initially some blogs saved", () => {
         likes: 4,
       };
 
-      await api.post("/api/blogs").send(noUrlBlog).expect(400);
+      await api
+        .post("/api/blogs")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send(noUrlBlog)
+        .expect(400);
     });
   });
 
@@ -103,7 +135,10 @@ describe("when there are initially some blogs saved", () => {
       const blogsAtStart = await helper.blogInDb();
       const blogToDelete = blogsAtStart[0];
 
-      await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204);
+      await api
+        .delete(`/api/blogs/${blogToDelete.id}`)
+        .set("Authorization", `Bearer ${authToken}`)
+        .expect(204);
 
       const blogsAtEnd = await helper.blogInDb();
 
@@ -131,17 +166,6 @@ describe("when there are initially some blogs saved", () => {
 
       assert.strictEqual(response.body.likes, blogToUpdate.likes + 1);
     });
-  });
-});
-
-describe("when there is initially one user in db", () => {
-  beforeEach(async () => {
-    await User.deleteMany({});
-
-    const passwordHash = await bcrypt.hash("sekret", 10);
-    const user = new User({ username: "root", passwordHash });
-
-    await user.save();
   });
 
   test("creation succeeds with a fresh username", async () => {
@@ -284,6 +308,7 @@ describe("when there is initially one user in db", () => {
 
     const response = await api
       .post("/api/blogs")
+      .set("Authorization", `Bearer ${authToken}`)
       .send(newBlog)
       .expect(201)
       .expect("Content-Type", /application\/json/);
@@ -291,8 +316,19 @@ describe("when there is initially one user in db", () => {
     const updatedUser = await User.findById(user.id).populate("blogs");
     assert(updatedUser.blogs.some((blog) => blog.id === response.body.id));
   });
-});
 
-after(async () => {
-  await mongoose.connection.close();
+  test("adding a blog fails with proper status code if token is not provided", async () => {
+    const newBlog = {
+      title: "New Blog Without Token",
+      author: "Author",
+      url: "http://newblogwithouttoken.com",
+      likes: 0,
+    };
+
+    await api.post("/api/blogs").send(newBlog).expect(401);
+  });
+
+  after(async () => {
+    await mongoose.connection.close();
+  });
 });

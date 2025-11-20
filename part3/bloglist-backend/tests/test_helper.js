@@ -7,12 +7,14 @@ const initialBlogs = [
     author: "Author One",
     url: "http://firstblog.com",
     likes: 10,
+    user: undefined
   },
   {
     title: "Second Blog",
     author: "Author Two",
     url: "http://secondblog.com",
     likes: 20,
+    user: undefined
   },
 ];
 
