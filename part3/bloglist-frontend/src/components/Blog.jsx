@@ -1,6 +1,7 @@
 import { useState } from "react";
+import blogService from "../services/blogs";
 
-const Blog = ({ blog }) => {
+const Blog = ({ blog, updateBlog, user, handleRemoveBlog }) => {
   const blogStyle = {
     paddingTop: 10,
     paddingLeft: 2,
@@ -18,16 +19,56 @@ const Blog = ({ blog }) => {
     setVisible(!visible);
   };
 
+  const increaseLikes = async () => {
+    try {
+      const updatedBlog = await blogService.updateLikes({
+        ...blog,
+        likes: blog.likes + 1,
+      });
+      updateBlog(updatedBlog);
+    } catch (error) {
+      console.log(error.message); // probably implement something more legit here later
+    }
+  };
+
+  const removeBlog = async () => {
+    if (
+      window.confirm(`Remove blog ${blog.title} by ${blog.author}?`) === false
+    ) {
+      return;
+    }
+    try {
+      await blogService.remove(blog);
+      handleRemoveBlog(blog);
+    } catch (error) {
+      console.log(error.message); // fix this later
+    }
+  };
+
   return (
     <div>
-      <div style={hideWhenVisible}>
-        <button onClick={toggleVisibility}>View</button>
-      </div>
+      <div style={blogStyle}>
+        {blog.title} {blog.author}
+        {/* <div style={hideWhenVisible}> */}
+        <button style={hideWhenVisible} onClick={toggleVisibility}>
+          View
+        </button>
+        {/* </div> */}
+        <button style={showWhenVisible} onClick={toggleVisibility}>
+          Hide
+        </button>
+        <div style={showWhenVisible}>
+          <div>
+            <a href={blog.url}>{blog.url}</a>
+          </div>
+          <div>
+            {blog.likes} <button onClick={increaseLikes}>Like</button>
+          </div>
+          <div>{name}</div>
 
-      <div style={showWhenVisible}>
-        <div style={blogStyle}>
-          {blog.title} {blog.author}
-          <button onClick={toggleVisibility}>Hide</button>
+          {user.name === blog.user.name && (
+            <button onClick={removeBlog}>Remove</button>
+          )}
         </div>
       </div>
     </div>

@@ -15,7 +15,9 @@ const App = () => {
 
   useEffect(() => {
     if (user) {
-      blogService.getAll().then((blogs) => setBlogs(blogs));
+      blogService
+        .getAll()
+        .then((blogs) => setBlogs(blogs.sort((a, b) => b.likes - a.likes)));
     }
   }, [user]);
 
@@ -56,26 +58,6 @@ const App = () => {
     setUser(null);
   };
 
-  const handleCreate = async (event) => {
-    event.preventDefault();
-    try {
-      const newBlog = await blogService.create({ title, url });
-      setBlogs(blogs.concat(newBlog));
-      setTitle("");
-      setAuthor("");
-      setUrl("");
-      setMessage(`a new blog ${title} added`);
-      setTimeout(() => {
-        setMessage(null);
-      }, 5000);
-    } catch (error) {
-      setMessage(error.response.data.error);
-      setTimeout(() => {
-        setMessage(null);
-      }, 5000);
-    }
-  };
-
   if (user === null) {
     return (
       <Togglable buttonLabel="Login">
@@ -97,10 +79,34 @@ const App = () => {
       <div>{message}</div>
       <div>{user.name} logged in</div>
       <Togglable buttonLabel="create new blog">
-        <BlogForm handleCreate={handleCreate} />
+        <BlogForm
+          handleMessageChange={(message) => setMessage(message)}
+          handleBlogsChange={(newBlog) =>
+            setBlogs(
+              blogs
+                .concat({ ...newBlog, user })
+                .sort((a, b) => b.likes - a.likes)
+            )
+          }
+        />
       </Togglable>
       {blogs.map((blog) => (
-        <Blog key={blog.id} blog={blog} />
+        <Blog
+          key={blog.id}
+          user={user}
+          name={blog.user.name}
+          blog={blog}
+          updateBlog={(newBlog) =>
+            setBlogs(
+              blogs
+                .map((blog) => (blog.id === newBlog.id ? newBlog : blog))
+                .sort((a, b) => b.likes - a.likes)
+            )
+          }
+          handleRemoveBlog={(targetBlog) =>
+            setBlogs(blogs.filter((blog) => targetBlog.id !== blog.id))
+          }
+        />
       ))}
       <form action="submit" onSubmit={handleLogout}>
         <button>Logout</button>
