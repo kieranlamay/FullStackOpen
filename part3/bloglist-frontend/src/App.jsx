@@ -58,6 +58,46 @@ const App = () => {
     setUser(null);
   };
 
+  const handleCreateBlog = async (blogData) => {
+    try {
+      const newBlog = await blogService.create(blogData);
+      setBlogs(
+        blogs.concat({ ...newBlog, user }).sort((a, b) => b.likes - a.likes)
+      );
+      setMessage(`a new blog ${newBlog.title} added`);
+      setTimeout(() => {
+        setMessage(null);
+      }, 5000);
+    } catch (error) {
+      setMessage(error?.response?.data?.error || error?.message);
+      setTimeout(() => {
+        setMessage(null);
+      }, 5000);
+    }
+  };
+
+  const handleUpdateBlog = async (blogToUpdate) => {
+    try {
+      const updated = await blogService.updateLikes(blogToUpdate);
+      setBlogs(
+        blogs
+          .map((b) => (b.id === updated.id ? updated : b))
+          .sort((a, b) => b.likes - a.likes)
+      );
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
+  const handleRemoveBlog = async (blogToRemove) => {
+    try {
+      await blogService.remove(blogToRemove);
+      setBlogs(blogs.filter((b) => b.id !== blogToRemove.id));
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
   if (user === null) {
     return (
       <Togglable buttonLabel="Login">
@@ -79,16 +119,7 @@ const App = () => {
       <div>{message}</div>
       <div>{user.name} logged in</div>
       <Togglable buttonLabel="create new blog">
-        <BlogForm
-          handleMessageChange={(message) => setMessage(message)}
-          handleBlogsChange={(newBlog) =>
-            setBlogs(
-              blogs
-                .concat({ ...newBlog, user })
-                .sort((a, b) => b.likes - a.likes)
-            )
-          }
-        />
+        <BlogForm handleBlogsChange={handleCreateBlog} />
       </Togglable>
       {blogs.map((blog) => (
         <Blog
@@ -96,16 +127,8 @@ const App = () => {
           user={user}
           name={blog.user.name}
           blog={blog}
-          updateBlog={(newBlog) =>
-            setBlogs(
-              blogs
-                .map((blog) => (blog.id === newBlog.id ? newBlog : blog))
-                .sort((a, b) => b.likes - a.likes)
-            )
-          }
-          handleRemoveBlog={(targetBlog) =>
-            setBlogs(blogs.filter((blog) => targetBlog.id !== blog.id))
-          }
+          updateBlog={handleUpdateBlog}
+          handleRemoveBlog={handleRemoveBlog}
         />
       ))}
       <form action="submit" onSubmit={handleLogout}>

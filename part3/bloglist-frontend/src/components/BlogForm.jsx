@@ -1,29 +1,17 @@
 import { useState } from "react";
-import blogService from "../services/blogs";
 
-const BlogForm = ({ handleBlogsChange, handleMessageChange }) => {
+const BlogForm = ({ handleBlogsChange }) => {
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
   const [url, setUrl] = useState("");
 
   const handleCreate = async (event) => {
     event.preventDefault();
-    try {
-      const newBlog = await blogService.create({ title, author, url });
-      handleBlogsChange(newBlog);
-      setTitle("");
-      setAuthor("");
-      setUrl("");
-      handleMessageChange(`a new blog ${title} added`);
-      setTimeout(() => {
-        handleMessageChange(null);
-      }, 5000);
-    } catch (error) {
-      handleMessageChange(error.response.data.error);
-      setTimeout(() => {
-        handleMessageChange(null);
-      }, 5000);
-    }
+    // Delegate creation to parent App via `handleBlogsChange` prop
+    handleBlogsChange({ title, author, url });
+    setTitle("");
+    setAuthor("");
+    setUrl("");
   };
 
   return (
@@ -42,7 +30,7 @@ const BlogForm = ({ handleBlogsChange, handleMessageChange }) => {
           </label>
         </div>
         <div>
-          <label htmlFor="">
+          <label>
             author:{" "}
             <input
               type="text"
@@ -53,7 +41,7 @@ const BlogForm = ({ handleBlogsChange, handleMessageChange }) => {
         </div>
 
         <div>
-          <label htmlFor="">
+          <label>
             url:{" "}
             <input
               type="text"
