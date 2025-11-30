@@ -31,6 +31,24 @@ const App = () => {
     mutationFn: createAnecdote,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['anecdotes'] }) // invalidate the query key to force a refetch
+      console.log('new anecdote')
+      notificationDispatch({ type: 'CREATE', payload: content })
+
+      setTimeout(() => {
+        notificationDispatch({ type: 'CLEAR' })
+      }, 5000)
+    },
+
+    onError: (error) => {
+      console.error('Error creating anecdote:', error.message)
+      notificationDispatch({
+        type: 'ERROR',
+        payload: error.message,
+      })
+
+      setTimeout(() => {
+        notificationDispatch({ type: 'CLEAR' })
+      }, 5000)
     },
   })
 

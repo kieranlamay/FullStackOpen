@@ -10,11 +10,6 @@ const AnecdoteForm = ({ newAnecdoteMutation }) => {
     const content = event.target.anecdote.value
     event.target.anecdote.value = ''
     newAnecdoteMutation.mutate({ content: content, votes: 0 })
-    console.log('new anecdote')
-    notificationDispatch({ type: 'CREATE', payload: content })
-    setTimeout(() => {
-      notificationDispatch({ type: 'CLEAR' })
-    }, 5000)
   }
 
   return (
