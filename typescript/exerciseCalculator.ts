@@ -33,7 +33,7 @@ const parseArguments = (
   };
 };
 
-const calculateExercises = (
+export const calculateExercises = (
   dailyExerciseHours: number[],
   target: number
 ): Result => {
@@ -72,7 +72,8 @@ const calculateExercises = (
   };
 };
 
-const { dailyExerciseHours, target } = parseArguments(process.argv);
-console.log(calculateExercises(dailyExerciseHours, target));
-
+if (require.main === module) {
+  const { dailyExerciseHours, target } = parseArguments(process.argv);
+  console.log(calculateExercises(dailyExerciseHours, target));
+}
 export default "just satisfy the module system ts";
