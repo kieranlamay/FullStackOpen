@@ -1,19 +1,19 @@
+import { Part } from "./Part";
+import type { CoursePart } from "../types";
+
 interface contentProps {
-  courseParts: Array<{ name: string; exerciseCount: number }>;
+  courseParts: Array<CoursePart>;
 }
 
 export const Content = (props: contentProps) => {
   return (
     <div>
-      <p>
-        {props.courseParts[0].name} {props.courseParts[0].exerciseCount}
-      </p>
-      <p>
-        {props.courseParts[1].name} {props.courseParts[1].exerciseCount}
-      </p>
-      <p>
-        {props.courseParts[2].name} {props.courseParts[2].exerciseCount}
-      </p>
+      <Part coursePart={props.courseParts[0]}></Part>
+      <Part coursePart={props.courseParts[1]}></Part>
+      <Part coursePart={props.courseParts[2]}></Part>
+      <Part coursePart={props.courseParts[3]}></Part>
+      <Part coursePart={props.courseParts[4]}></Part>
+      <Part coursePart={props.courseParts[5]}></Part>
     </div>
   );
 };
