@@ -54,6 +54,21 @@ app.post("/api/patients", (req, res) => {
   }
 });
 
+app.get("/api/patients/:id", (req, res: Response<NonSensitivePatient | { error: string }>) => {
+  try {
+    const patient = patientService
+      .getPatients()
+      .find((p) => p.id === req.params.id);
+    if (!patient) {
+      res.status(404).send({ error: "Patient not found" });
+      return;
+    }
+    res.json(patient);
+  } catch (error) {
+    res.status(500).send({ error: "Internal server error" });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

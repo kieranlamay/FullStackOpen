@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { Gender } from "./types";
+import { Gender, Entry } from "./types";
+
 
 export const NewPatientSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
@@ -11,6 +12,7 @@ export const NewPatientSchema = z.object({
   ssn: z.string().min(1, { message: "ssn is required" }),
   gender: z.nativeEnum(Gender),
   occupation: z.string().min(1, { message: "occupation is required" }),
+  entries: z.array(z.any()).optional().default([]),
 });
 
 export type NewPatientInput = z.infer<typeof NewPatientSchema>;

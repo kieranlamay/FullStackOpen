@@ -41,15 +41,17 @@ const data = [
   },
 ];
 
-const patientData = data.map(({ id, name, dateOfBirth, ssn, gender, occupation }) => {
-  return {
-    id,
-    name,
-    dateOfBirth,
-    ssn,
-    gender,
-    occupation,
-  };
-});
+const patientData = data.map(
+  ({ id, name, dateOfBirth, ssn, gender, occupation }) => {
+    return {
+      id,
+      name,
+      dateOfBirth,
+      ssn,
+      gender,
+      occupation,
+    };
+  }
+);
 
 export default patientData;
